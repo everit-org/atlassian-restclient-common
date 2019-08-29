@@ -12,6 +12,7 @@ import java.util.Optional;
 import javax.annotation.Generated;
 
 import org.everit.http.client.HttpMethod;
+import org.everit.http.client.async.AsyncContentProvider;
 
 /**
  * A rest request that can be sent to a remote endpoint with one of the CallEndpoint parameters of
@@ -51,40 +52,66 @@ public final class RestRequest {
       this.requestBody = restRequest.requestBody;
     }
 
+    /**
+     * The base path of the request with probably the protocol, hostname and optionally the port.
+     */
     public Builder basePath(String basePath) {
       this.basePath = basePath;
       return this;
     }
 
+    /**
+     * Builds the unmodifiable rest request instance.
+     */
     public RestRequest build() {
       return new RestRequest(this);
     }
 
+    /**
+     * The headers of the rest request.
+     */
     public Builder headers(Map<String, String> headers) {
       this.headers = headers;
       return this;
     }
 
+    /**
+     * Method of the rest request. Default: {@link HttpMethod#GET}
+     */
     public Builder method(HttpMethod method) {
       this.method = method;
       return this;
     }
 
+    /**
+     * Path of the rest request.
+     */
     public Builder path(String path) {
       this.path = path;
       return this;
     }
 
+    /**
+     * Path parameters that will be injected within {@link #path(String)}.
+     */
     public Builder pathParams(Map<String, String> pathParams) {
       this.pathParams = pathParams;
       return this;
     }
 
+    /**
+     * Query parameters that will be appended after the path.
+     */
     public Builder queryParams(Map<String, Collection<String>> queryParams) {
       this.queryParams = queryParams;
       return this;
     }
 
+    /**
+     * Optional body of the request. If the object is an implementation of
+     * {@link AsyncContentProvider} it is be used as is, otherwise Jackson is used to convert the
+     * object to a JSON String.
+     */
     public Builder requestBody(Optional<Object> requestBody) {
       this.requestBody = requestBody;
       return this;
@@ -190,30 +217,53 @@ public final class RestRequest {
     return url.toString();
   }
 
+  /**
+   * The base path of the request with probably the protocol, hostname and optionally the port.
+   */
   public String getBasePath() {
     return this.basePath;
   }
 
+  /**
+   * The headers of the rest request.
+   */
   public Map<String, String> getHeaders() {
     return this.headers;
   }
 
+  /**
+   * Method of the rest request. Default: {@link HttpMethod#GET}
+   */
   public HttpMethod getMethod() {
     return this.method;
   }
 
+  /**
+   * Path of the rest request.
+   */
   public String getPath() {
     return this.path;
   }
 
+  /**
+   * Path parameters that will be injected within {@link #path(String)}.
+   */
   public Map<String, String> getPathParams() {
     return this.pathParams;
   }
 
+  /**
+   * Query parameters that will be appended after the path.
+   */
   public Map<String, Collection<String>> getQueryParams() {
     return this.queryParams;
   }
 
+  /**
+   * Optional body of the request. If the object is an implementation of
+   * {@link AsyncContentProvider} it is be used as is, otherwise Jackson is used to convert the
+   * object to a JSON String.
+   */
   public Optional<Object> getRequestBody() {
     return this.requestBody;
   }
