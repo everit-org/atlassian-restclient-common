@@ -13,6 +13,16 @@ public class RestException extends RuntimeException {
 
   private final Optional<String> responseBody;
 
+  /**
+   * Constructor.
+   *
+   * @param message
+   *          Message of the exception.
+   * @param httpCode
+   *          The status code of the HTTP request.
+   * @param responseBody
+   *          The body of the request if there is one.
+   */
   public RestException(String message, int httpCode, Optional<String> responseBody) {
     super(message);
     this.httpCode = httpCode;
@@ -20,11 +30,11 @@ public class RestException extends RuntimeException {
   }
 
   public int getHttpCode() {
-    return httpCode;
+    return this.httpCode;
   }
 
   public Optional<String> getResponseBody() {
-    return responseBody;
+    return this.responseBody;
   }
 
 }

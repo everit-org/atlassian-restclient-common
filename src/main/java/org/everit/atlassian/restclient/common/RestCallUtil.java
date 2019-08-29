@@ -21,16 +21,71 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.disposables.Disposable;
 
-public class RestCallUtil {
+/**
+ * Helper methods to call REST endpoints, so the generated code can be much smaller.
+ */
+public final class RestCallUtil {
 
-  private static ObjectMapper objectMapper = new ObjectMapper();;
+  private static final int HTTP_LOWEST_ERROR_CODE = 400;
 
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+  /**
+   * Calls a rest endpoint asynchronously where there is no response body.
+   *
+   * @param httpClient
+   *          The {@link HttpClient} implementation.
+   * @param restRequest
+   *          The request that is used to call the endpoint.
+   * @param requestEnhancer
+   *          If specified, it is used to enhance the rest request before sending it.
+   * @return An asynchronous instance that is notified when the response without a body has arrived
+   *         back.
+   */
+  public static Completable callEndpoint(HttpClient httpClient,
+      RestRequest restRequest, Optional<RestRequestEnhancer> requestEnhancer) {
+
+    Single<HttpResponse> single =
+        RestCallUtil.callEndpointAndHandleErrors(httpClient, restRequest, requestEnhancer);
+
+    return Single.create((emitter) -> {
+      Disposable disposable = single.subscribe(httpResponse -> {
+        try {
+          emitter.onSuccess(httpResponse);
+        } finally {
+          httpResponse.close();
+        }
+      }, error -> emitter.onError(error));
+
+      emitter.setCancellable(() -> disposable.dispose());
+    }).ignoreElement();
+  }
+
+  /**
+   * Calls a rest endpoint asynchronously.
+   *
+   * @param <T>
+   *          Type of the response body.
+   * @param httpClient
+   *          The {@link HttpClient} implementation.
+   * @param restRequest
+   *          The request that is used to call the endpoint.
+   * @param requestEnhancer
+   *          If specified, it is used to enhance the rest request before sending it.
+   * @param returnType
+   *          Type of the response body, Jackson is used to convert it from JSON to a typed java
+   *          object.
+   * @return An asynchronous object that is notified when the response is processed to the return
+   *         type.
+   */
   public static <T> Single<T> callEndpoint(HttpClient httpClient,
-      RestRequest restRequest, TypeReference<T> returnType) {
+      RestRequest restRequest, Optional<RestRequestEnhancer> requestEnhancer,
+      TypeReference<T> returnType) {
 
     Single<HttpResponse> response =
-        callEndpointAndHandleErrors(httpClient, restRequest);
+        RestCallUtil.callEndpointAndHandleErrors(httpClient, restRequest, requestEnhancer);
 
     return response.flatMap((httpResponse) -> {
 
@@ -39,39 +94,25 @@ public class RestCallUtil {
           StandardCharsets.UTF_8);
 
     }).map((stringResponse) -> {
-      return objectMapper.readValue(stringResponse, returnType);
+      return RestCallUtil.OBJECT_MAPPER.readValue(stringResponse, returnType);
     });
   }
 
-  public static Completable callEndpoint(HttpClient httpClient,
-      RestRequest endpointParameter) {
-
-    Single<HttpResponse> single = callEndpointAndHandleErrors(httpClient, endpointParameter);
-
-    return Single.create((emitter) -> {
-      single.subscribe(httpResponse -> {
-        try {
-          emitter.onSuccess(httpResponse);
-        } finally {
-          httpResponse.close();
-        }
-      }, error -> emitter.onError(error));
-    }).ignoreElement();
-  }
-
   private static Single<HttpResponse> callEndpointAndHandleErrors(HttpClient httpClient,
-      RestRequest restRequest) {
+      RestRequest restRequest, Optional<RestRequestEnhancer> requestEnhancer) {
 
-    String url = restRequest.buildURI();
+    RestRequest enhancedRestRequest = RestCallUtil.enhanceRequest(restRequest, requestEnhancer);
+
+    String url = enhancedRestRequest.buildURI();
     HttpRequest request = HttpRequest.builder()
         .url(url)
-        .method(restRequest.method)
-        .headers(restRequest.headers)
-        .body(createHttpBody(restRequest.requestBody))
+        .method(enhancedRestRequest.getMethod())
+        .headers(enhancedRestRequest.getHeaders())
+        .body(RestCallUtil.createHttpBody(enhancedRestRequest.getRequestBody()))
         .build();
 
     Single<HttpResponse> response = httpClient.send(request).flatMap((httpResponse) -> {
-      if (httpResponse.getStatus() >= 400) {
+      if (httpResponse.getStatus() >= RestCallUtil.HTTP_LOWEST_ERROR_CODE) {
         return AsyncContentUtil
             .readString(new AutoCloseAsyncContentProvider(httpResponse.getBody(), httpResponse),
                 StandardCharsets.UTF_8)
@@ -88,16 +129,6 @@ public class RestCallUtil {
     return response;
   }
 
-  public static Collection<String> objectCollectionToStringCollection(
-      Collection<?> collection) {
-
-    List<String> result = new ArrayList<String>(collection.size());
-    for (Object obj : collection) {
-      result.add(String.valueOf(obj));
-    }
-    return result;
-  }
-
   private static Optional<AsyncContentProvider> createHttpBody(Optional<Object> requestBodyOpt) {
 
     if (!requestBodyOpt.isPresent()) {
@@ -110,7 +141,7 @@ public class RestCallUtil {
     } else {
       String json;
       try {
-        json = objectMapper.writeValueAsString(requestBody);
+        json = RestCallUtil.OBJECT_MAPPER.writeValueAsString(requestBody);
       } catch (JsonProcessingException e) {
         throw new RuntimeException(e);
       }
@@ -119,5 +150,37 @@ public class RestCallUtil {
       return Optional.of(new ByteArrayAsyncContentProvider(jsonByteArray,
           Optional.of(MediaType.parse("application/json"))));
     }
+  }
+
+  private static RestRequest enhanceRequest(RestRequest restRequest,
+      Optional<RestRequestEnhancer> requestEnhancer) {
+
+    RestRequest enhancedRestRequest = restRequest;
+
+    if (requestEnhancer.isPresent()) {
+      enhancedRestRequest = requestEnhancer.get().enhanceRestRequest(restRequest);
+    }
+    return enhancedRestRequest;
+  }
+
+  /**
+   * Converts any kind of collection to a string collection. This is useful when the programmer does
+   * not know the type that is in the instance in advance and it must be passed to query parameters.
+   *
+   * @param collection
+   *          The any kind of object collection.
+   * @return The string collection.
+   */
+  public static Collection<String> objectCollectionToStringCollection(
+      Collection<?> collection) {
+
+    List<String> result = new ArrayList<>(collection.size());
+    for (Object obj : collection) {
+      result.add(String.valueOf(obj));
+    }
+    return result;
+  }
+
+  private RestCallUtil() {
   }
 }
