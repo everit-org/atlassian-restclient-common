@@ -1,3 +1,18 @@
+/*
+ * Copyright © 2011 Everit Kft. (http://www.everit.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.everit.atlassian.restclient.common;
 
 import java.io.UnsupportedEncodingException;
@@ -37,7 +52,7 @@ public final class RestRequest {
 
     private Map<String, Collection<String>> queryParams = Collections.emptyMap();
 
-    private Optional<Object> requestBody = Optional.empty();
+    private Optional<?> requestBody = Optional.empty();
 
     private Builder() {
     }
@@ -112,7 +127,7 @@ public final class RestRequest {
      * {@link AsyncContentProvider} it is be used as is, otherwise Jackson is used to convert the
      * object to a JSON String.
      */
-    public Builder requestBody(Optional<Object> requestBody) {
+    public Builder requestBody(Optional<?> requestBody) {
       this.requestBody = requestBody;
       return this;
     }
@@ -152,7 +167,7 @@ public final class RestRequest {
 
   private final Map<String, Collection<String>> queryParams;
 
-  private final Optional<Object> requestBody;
+  private final Optional<?> requestBody;
 
   @Generated("SparkTools")
   private RestRequest(Builder builder) {
@@ -264,7 +279,7 @@ public final class RestRequest {
    * {@link AsyncContentProvider} it is be used as is, otherwise Jackson is used to convert the
    * object to a JSON String.
    */
-  public Optional<Object> getRequestBody() {
+  public Optional<?> getRequestBody() {
     return this.requestBody;
   }
 
