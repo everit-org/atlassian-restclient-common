@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.atlassian.restclient.common;
+package org.everit.http.restclient;
 
 /**
  * Programmers can pass an optional {@link RestRequestEnhancer} to any of the callEndpoint functions
