@@ -28,14 +28,66 @@
 
   <groupId>org.everit.http</groupId>
   <artifactId>org.everit.http.restclient</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Helper classes to make REST call easier.</name>
+  <version>1.0.0</version>
+  <packaging>bundle</packaging>
+  <name>Everit - HTTP Rest Client</name>
+  <description>Helper classes to make REST call easier.</description>
 
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <projectpath>everit-restclient</projectpath>
   </properties>
 
+  <scm>
+    <connection>scm:git:git://github.com/everit-org/${projectpath}.git</connection>
+    <developerConnection>scm:git:https://github.com/everit-org/${projectpath}.git</developerConnection>
+    <url>https://github.com/everit-org/${projectpath}</url>
+  </scm>
+
+  <url>https://github.com/everit-org/${projectpath}</url>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/everit-org/${projectpath}/issues</url>
+  </issueManagement>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Everit Team</name>
+    </developer>
+  </developers>
+
+  <organization>
+    <name>Everit Kft.</name>
+    <url>http://www.everit.org</url>
+  </organization>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Import-Package>
+              *
+            </Import-Package>
+            <Export-Package>
+              org.everit.http.restclient;version="1.0.0"
+            </Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.everit.http</groupId>

@@ -64,4 +64,8 @@ For more information, please see the Javadoc of the classes.
 
 All responses that have status code _>= 400_ are propagated to the return type as _RestException_.
 
+## Roadmap
 
+Please note that version 1.0 was created to support the minimum for another
+project. Version 2.0 will have a more generic API that can be used with more
+request and response types.
