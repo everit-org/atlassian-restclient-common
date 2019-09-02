@@ -15,6 +15,8 @@
  */
 package org.everit.http.restclient;
 
+import io.reactivex.Single;
+
 /**
  * Programmers can pass an optional {@link RestRequestEnhancer} to any of the callEndpoint functions
  * of {@link RestCallUtil} that will modify the original request by creating a new one. This can be
@@ -29,5 +31,5 @@ public interface RestRequestEnhancer {
    *          The original rest request.
    * @return The enhanced rest request.
    */
-  RestRequest enhanceRestRequest(RestRequest request);
+  Single<RestRequest> enhanceRestRequest(RestRequest request);
 }

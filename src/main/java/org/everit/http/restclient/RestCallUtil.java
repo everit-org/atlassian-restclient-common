@@ -116,8 +116,15 @@ public final class RestCallUtil {
   private static Single<HttpResponse> callEndpointAndHandleErrors(HttpClient httpClient,
       RestRequest restRequest, Optional<RestRequestEnhancer> requestEnhancer) {
 
-    RestRequest enhancedRestRequest = RestCallUtil.enhanceRequest(restRequest, requestEnhancer);
+    return RestCallUtil.enhanceRequest(restRequest, requestEnhancer).flatMap(
+        enhancedRestRequest -> RestCallUtil.callHttpEndpointAndHandleErrorsWithEnhancedRequest(
+            httpClient, enhancedRestRequest));
 
+  }
+
+  private static Single<HttpResponse> callHttpEndpointAndHandleErrorsWithEnhancedRequest(
+      HttpClient httpClient,
+      RestRequest enhancedRestRequest) {
     String url = enhancedRestRequest.buildURI();
     HttpRequest request = HttpRequest.builder()
         .url(url)
@@ -167,15 +174,13 @@ public final class RestCallUtil {
     }
   }
 
-  private static RestRequest enhanceRequest(RestRequest restRequest,
+  private static Single<RestRequest> enhanceRequest(RestRequest restRequest,
       Optional<RestRequestEnhancer> requestEnhancer) {
 
-    RestRequest enhancedRestRequest = restRequest;
-
     if (requestEnhancer.isPresent()) {
-      enhancedRestRequest = requestEnhancer.get().enhanceRestRequest(restRequest);
+      return requestEnhancer.get().enhanceRestRequest(restRequest);
     }
-    return enhancedRestRequest;
+    return Single.just(restRequest);
   }
 
   /**
