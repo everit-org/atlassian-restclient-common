@@ -197,19 +197,17 @@ public final class RestRequest {
    * with the injected path parameters and the query parameters.
    */
   public String buildURI() {
-    StringBuilder url = new StringBuilder(this.basePath != null ? this.basePath : "");
-
-    if (this.basePath == null || this.basePath.endsWith("/")) {
-      url.append('/');
-    }
+    String basePath = this.basePath != null ? this.basePath : "";
+    StringBuilder url = new StringBuilder(basePath);
 
     String pathWithPathParams = buildPathWithPathParams();
 
-    if (pathWithPathParams.startsWith("/")) {
-      url.append(pathWithPathParams, 1, pathWithPathParams.length());
-    } else {
-      url.append(pathWithPathParams);
+    if (pathWithPathParams.length() > 0 && !pathWithPathParams.startsWith("/")
+        && !basePath.endsWith("/")) {
+      url.append('/');
     }
+
+    url.append(pathWithPathParams);
 
     char separatorChar = url.toString().contains("?") ? '&' : '?';
 

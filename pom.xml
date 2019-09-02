@@ -28,7 +28,7 @@
 
   <groupId>org.everit.http</groupId>
   <artifactId>org.everit.http.restclient</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>bundle</packaging>
   <name>Everit - HTTP Rest Client</name>
   <description>Helper classes to make REST call easier.</description>
@@ -81,7 +81,7 @@
               *
             </Import-Package>
             <Export-Package>
-              org.everit.http.restclient;version="1.0.1"
+              org.everit.http.restclient;version="1.0.2"
             </Export-Package>
           </instructions>
         </configuration>
