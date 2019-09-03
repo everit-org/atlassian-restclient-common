@@ -16,6 +16,11 @@
 package org.everit.http.restclient;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +38,9 @@ import org.everit.http.client.async.ByteArrayAsyncContentProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -43,9 +51,45 @@ import io.reactivex.disposables.Disposable;
  */
 public final class RestCallUtil {
 
+  /**
+   * Helper class to be able to deserialize iso offset date time with millisecs.
+   */
+  private static class OffsetDateTimeDeserializer extends InstantDeserializer<OffsetDateTime> {
+
+    private static final long serialVersionUID = 4935425608165819930L;
+
+    /**
+     * constructor.
+     */
+    OffsetDateTimeDeserializer() {
+      super(
+          OffsetDateTime.class,
+          RestCallUtil.DATETIMEFORMATTER_OFFSETDATETIME_WITH_OPTIONAL_MILLISECS,
+          OffsetDateTime::from,
+          a -> OffsetDateTime.ofInstant(Instant.ofEpochMilli(a.value), a.zoneId),
+          a -> OffsetDateTime.ofInstant(Instant.ofEpochSecond(a.integer, a.fraction), a.zoneId),
+          (d, z) -> d.withOffsetSameInstant(z.getRules().getOffset(d.toLocalDateTime())),
+          true // yes, replace zero offset with Z
+      );
+    }
+  }
+
+  public static final DateTimeFormatter DATETIMEFORMATTER_OFFSETDATETIME_WITH_OPTIONAL_MILLISECS =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+          .optionalStart()
+          .appendFraction(ChronoField.MILLI_OF_SECOND, 0, 2 + 1, true)
+          .optionalEnd()
+          .appendOffset("+HHmm", "Z")
+          .optionalStart()
+          .appendLiteral('[')
+          .parseCaseSensitive()
+          .appendZoneRegionId()
+          .appendLiteral(']')
+          .toFormatter();
+
   private static final int HTTP_LOWEST_ERROR_CODE = 400;
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final ObjectMapper OBJECT_MAPPER = RestCallUtil.createObjectMapper();
 
   /**
    * Calls a rest endpoint asynchronously where there is no response body.
@@ -172,6 +216,19 @@ public final class RestCallUtil {
       return Optional.of(new ByteArrayAsyncContentProvider(jsonByteArray,
           Optional.of(MediaType.parse("application/json"))));
     }
+  }
+
+  /**
+   * Creates a new {@link ObjectMapper} instance with the most commonly registered modules.
+   * Currently jdk8 and JavaTime modules are registered.
+   */
+  public static ObjectMapper createObjectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new Jdk8Module());
+    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    javaTimeModule.addDeserializer(OffsetDateTime.class, new OffsetDateTimeDeserializer());
+    objectMapper.registerModule(javaTimeModule);
+    return objectMapper;
   }
 
   private static Single<RestRequest> enhanceRequest(RestRequest restRequest,
