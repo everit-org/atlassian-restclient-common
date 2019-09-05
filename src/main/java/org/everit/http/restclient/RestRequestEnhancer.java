@@ -19,7 +19,7 @@ import io.reactivex.Single;
 
 /**
  * Programmers can pass an optional {@link RestRequestEnhancer} to any of the callEndpoint functions
- * of {@link RestCallUtil} that will modify the original request by creating a new one. This can be
+ * of {@link RestClient} that will modify the original request by creating a new one. This can be
  * useful for example if we want to add authorization headers to the request on the fly.
  */
 public interface RestRequestEnhancer {

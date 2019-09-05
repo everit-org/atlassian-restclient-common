@@ -8,6 +8,20 @@ The original goal of this library to add some functions that help generating
 code from OpenAPI specification, so the code inside the generated classes
 are much less simple.
 
+## Create a RestClient instance
+
+    // Create a HttpClient instance.
+    HttpClient httpClient = ...
+    
+    // Create a JSONObjectMapper instance. E.g.: based on Jackson or GSON
+    JSONObjectMapper objectMapper = ...
+    
+    // Instantiate the rest client. You must close the instance after it
+    // is not necessary anymore. Closing the restClient instance will also
+    // close the httpClient instance.
+    RestClient restClient = new RestClient(httpClient, objectMapper);
+
+
 ## Sample Rest function
 
     /**
@@ -54,7 +68,7 @@ are much less simple.
       
       requestBuilder.requestBody(Optional.of(requestBody));
       
-      return RestCallUtil.callEndpoint(httpClient, requestBuilder.build(),
+      return RestCallUtil.callEndpoint(requestBuilder.build(),
           restRequestEnhancer, new TypeReference<MyReturnType>() {});
     }
 
@@ -64,8 +78,3 @@ For more information, please see the Javadoc of the classes.
 
 All responses that have status code _>= 400_ are propagated to the return type as _RestException_.
 
-## Roadmap
-
-Please note that version 1.0 was created to support the minimum for another
-project. Version 2.0 will have a more generic API that can be used with more
-request and response types.

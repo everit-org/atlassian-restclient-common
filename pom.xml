@@ -28,7 +28,7 @@
 
   <groupId>org.everit.http</groupId>
   <artifactId>org.everit.http.restclient</artifactId>
-  <version>1.1.0</version>
+  <version>2.0.0</version>
   <packaging>bundle</packaging>
   <name>Everit - HTTP Rest Client</name>
   <description>Helper classes to make REST call easier.</description>
@@ -81,7 +81,7 @@
               *
             </Import-Package>
             <Export-Package>
-              org.everit.http.restclient;version="1.1.0"
+              org.everit.http.restclient;version="2.0.0"
             </Export-Package>
           </instructions>
         </configuration>
@@ -93,21 +93,6 @@
       <groupId>org.everit.http</groupId>
       <artifactId>org.everit.http.client</artifactId>
       <version>1.1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.9.9.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>2.9.9</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.9.9</version>
     </dependency>
   </dependencies>
 </project>

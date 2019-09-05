@@ -31,7 +31,7 @@ import org.everit.http.client.async.AsyncContentProvider;
 
 /**
  * A rest request that can be sent to a remote endpoint with one of the CallEndpoint parameters of
- * {@link RestCallUtil}.
+ * {@link RestClient}.
  */
 public final class RestRequest {
 
