@@ -22,7 +22,19 @@ import java.util.Optional;
  */
 public class RestException extends RuntimeException {
 
+  private static final String LINE_SEPARATOR = System.lineSeparator();
+
   private static final long serialVersionUID = 3006142336269779329L;
+
+  private static String createDetailedMessage(String message, String requestUrl,
+      int httpCode,
+      Optional<String> responseBody) {
+    return message + RestException.LINE_SEPARATOR
+        + "REQUEST URL: " + requestUrl + RestException.LINE_SEPARATOR
+        + "STATUS CODE: " + httpCode + RestException.LINE_SEPARATOR
+        + "RESPONSE BODY: " + RestException.LINE_SEPARATOR
+        + responseBody;
+  }
 
   private final int httpCode;
 
@@ -40,6 +52,28 @@ public class RestException extends RuntimeException {
    */
   public RestException(String message, int httpCode, Optional<String> responseBody) {
     super(message);
+    this.httpCode = httpCode;
+    this.responseBody = responseBody.isPresent() ? responseBody.get() : null;
+  }
+
+  /**
+   * Constructor.
+   *
+   * @param message
+   *          Message of the exception.
+   * @param requestUrl
+   *          The URL of the http request.
+   * @param httpCode
+   *          The status code of the HTTP request.
+   * @param responseBody
+   *          The body of the request if there is one.
+   */
+  public RestException(String message,
+      String requestUrl,
+      int httpCode,
+      Optional<String> responseBody) {
+    super(
+        RestException.createDetailedMessage(message, requestUrl, httpCode, responseBody));
     this.httpCode = httpCode;
     this.responseBody = responseBody.isPresent() ? responseBody.get() : null;
   }

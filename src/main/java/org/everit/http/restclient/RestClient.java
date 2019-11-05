@@ -136,7 +136,8 @@ public class RestClient implements Closeable {
             .readString(new AutoCloseAsyncContentProvider(httpResponse.getBody(), httpResponse),
                 StandardCharsets.UTF_8)
             .map((content) -> {
-              throw new RestException("Error sending request: " + request.getUrl(),
+              throw new RestException("Error sending request!",
+                  request.getUrl(),
                   httpResponse.getStatus(),
                   Optional.ofNullable("".equals(content) ? null : content));
             });
