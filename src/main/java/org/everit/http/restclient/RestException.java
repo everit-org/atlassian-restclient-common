@@ -61,6 +61,25 @@ public class RestException extends RuntimeException {
    *
    * @param message
    *          Message of the exception.
+   * @param httpCode
+   *          The status code of the HTTP request.
+   * @param responseBody
+   *          The body of the request if there is one.
+   * @param cause
+   *          The cause of the exception.
+   */
+  public RestException(String message, int httpCode, Optional<String> responseBody,
+      Throwable cause) {
+    super(message, cause);
+    this.httpCode = httpCode;
+    this.responseBody = responseBody.isPresent() ? responseBody.get() : null;
+  }
+
+  /**
+   * Constructor.
+   *
+   * @param message
+   *          Message of the exception.
    * @param requestUrl
    *          The URL of the http request.
    * @param httpCode
