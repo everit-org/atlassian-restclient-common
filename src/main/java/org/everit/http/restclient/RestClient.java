@@ -15,7 +15,6 @@
  */
 package org.everit.http.restclient;
 
-import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -35,7 +34,7 @@ import io.reactivex.disposables.Disposable;
 /**
  * Calls REST endpoints.
  */
-public class RestClient implements Closeable {
+public class RestClient {
 
   private static final int HTTP_LOWEST_ERROR_CODE = 400;
 
@@ -147,11 +146,6 @@ public class RestClient implements Closeable {
     });
 
     return response;
-  }
-
-  @Override
-  public void close() {
-    this.httpClient.close();
   }
 
   private Optional<AsyncContentProvider> createHttpBody(Optional<?> requestBodyOpt) {
