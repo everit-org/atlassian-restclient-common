@@ -15,7 +15,12 @@
  */
 package org.everit.http.restclient;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
+import org.everit.http.client.HttpMethod;
+import org.everit.http.client.async.AsyncContentProvider;
+import org.everit.http.client.async.AsyncContentUtil;
 
 /**
  * Exception type that is thrown if there is a HTTP exception during the REST call.
@@ -26,33 +31,60 @@ public class RestException extends RuntimeException {
 
   private static final long serialVersionUID = 3006142336269779329L;
 
-  private static String createDetailedMessage(String message, String requestUrl,
-      int httpCode,
-      Optional<String> responseBody) {
+  private static String createDetailedMessage(
+      final String message,
+      final HttpMethod httpMethod,
+      final String requestUrl,
+      final Optional<AsyncContentProvider> requestBody,
+      final int status,
+      final Optional<String> responseBody) {
     return message + RestException.LINE_SEPARATOR
+        + "HTTP METHOD: " + httpMethod + RestException.LINE_SEPARATOR
         + "REQUEST URL: " + requestUrl + RestException.LINE_SEPARATOR
-        + "STATUS CODE: " + httpCode + RestException.LINE_SEPARATOR
+        + "REQUEST BODY: " + RestException.LINE_SEPARATOR
+        + (requestBody.isPresent()
+            ? AsyncContentUtil.readString(requestBody.get(), StandardCharsets.UTF_8).blockingGet()
+            : "[-NO-REQUEST-BODY-AVAILABLE-]")
+        + RestException.LINE_SEPARATOR
+        + "STATUS CODE: " + status + RestException.LINE_SEPARATOR
         + "RESPONSE BODY: " + RestException.LINE_SEPARATOR
-        + responseBody;
+        + (responseBody.isPresent() ? responseBody.get() : "[-NO-RESPONSE-BODY-AVAILABLE-]");
   }
 
-  private final int httpCode;
-
   private final String responseBody;
+
+  private final int status;
 
   /**
    * Constructor.
    *
    * @param message
    *          Message of the exception.
-   * @param httpCode
+   * @param httpMethod
+   *          The method of the request.
+   * @param requestUrl
+   *          The URL of the http request.
+   * @param requestBody
+   *          The body of the request if there is one.
+   * @param status
    *          The status code of the HTTP request.
    * @param responseBody
    *          The body of the request if there is one.
+   * @param cause
+   *          The cause of the exeption if there is any.
    */
-  public RestException(String message, int httpCode, Optional<String> responseBody) {
-    super(message);
-    this.httpCode = httpCode;
+  public RestException(
+      final String message,
+      final HttpMethod httpMethod,
+      final String requestUrl,
+      final Optional<AsyncContentProvider> requestBody,
+      final int status,
+      final Optional<String> responseBody,
+      final Throwable cause) {
+    super(RestException.createDetailedMessage(
+        message, httpMethod, requestUrl, requestBody, status, responseBody),
+        cause);
+    this.status = status;
     this.responseBody = responseBody.isPresent() ? responseBody.get() : null;
   }
 
@@ -61,18 +93,36 @@ public class RestException extends RuntimeException {
    *
    * @param message
    *          Message of the exception.
-   * @param httpCode
+   * @param status
+   *          The status code of the HTTP request.
+   * @param responseBody
+   *          The body of the request if there is one.
+   */
+  public RestException(
+      final String message,
+      final int status,
+      final Optional<String> responseBody) {
+    this(message, status, responseBody, null);
+  }
+
+  /**
+   * Constructor.
+   *
+   * @param message
+   *          Message of the exception.
+   * @param status
    *          The status code of the HTTP request.
    * @param responseBody
    *          The body of the request if there is one.
    * @param cause
    *          The cause of the exception.
    */
-  public RestException(String message, int httpCode, Optional<String> responseBody,
-      Throwable cause) {
-    super(message, cause);
-    this.httpCode = httpCode;
-    this.responseBody = responseBody.isPresent() ? responseBody.get() : null;
+  public RestException(
+      final String message,
+      final int status,
+      final Optional<String> responseBody,
+      final Throwable cause) {
+    this(message, null, null, Optional.empty(), status, responseBody, cause);
   }
 
   /**
@@ -82,27 +132,35 @@ public class RestException extends RuntimeException {
    *          Message of the exception.
    * @param requestUrl
    *          The URL of the http request.
-   * @param httpCode
+   * @param status
    *          The status code of the HTTP request.
    * @param responseBody
    *          The body of the request if there is one.
    */
-  public RestException(String message,
-      String requestUrl,
-      int httpCode,
-      Optional<String> responseBody) {
-    super(
-        RestException.createDetailedMessage(message, requestUrl, httpCode, responseBody));
-    this.httpCode = httpCode;
-    this.responseBody = responseBody.isPresent() ? responseBody.get() : null;
+  public RestException(
+      final String message,
+      final String requestUrl,
+      final int status,
+      final Optional<String> responseBody) {
+    this(message, null, requestUrl, Optional.empty(), status, responseBody, null);
   }
 
+  /**
+   * Returns the status code of the response.
+   *
+   * @deprecated Use {@link #getStatus()} instead.
+   */
+  @Deprecated
   public int getHttpCode() {
-    return this.httpCode;
+    return getStatus();
   }
 
   public Optional<String> getResponseBody() {
     return Optional.ofNullable(this.responseBody);
+  }
+
+  public int getStatus() {
+    return this.status;
   }
 
 }

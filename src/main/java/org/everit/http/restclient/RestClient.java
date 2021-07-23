@@ -119,7 +119,7 @@ public class RestClient {
   }
 
   private Single<HttpResponse> callHttpEndpointAndHandleErrorsWithEnhancedRequest(
-      RestRequest enhancedRestRequest) {
+      final RestRequest enhancedRestRequest) {
 
     String url = enhancedRestRequest.buildURI();
     HttpRequest request = HttpRequest.builder()
@@ -130,15 +130,19 @@ public class RestClient {
         .build();
 
     Single<HttpResponse> response = this.httpClient.send(request).flatMap((httpResponse) -> {
-      if (httpResponse.getStatus() >= RestClient.HTTP_LOWEST_ERROR_CODE) {
+      int status = httpResponse.getStatus();
+      if (status >= RestClient.HTTP_LOWEST_ERROR_CODE) {
         return AsyncContentUtil
             .readString(new AutoCloseAsyncContentProvider(httpResponse.getBody(), httpResponse),
                 StandardCharsets.UTF_8)
             .map((content) -> {
               throw new RestException("Error sending request!",
+                  request.getMethod(),
                   request.getUrl(),
-                  httpResponse.getStatus(),
-                  Optional.ofNullable("".equals(content) ? null : content));
+                  createHttpBody(enhancedRestRequest.getRequestBody()),
+                  status,
+                  Optional.ofNullable("".equals(content) ? null : content),
+                  null);
             });
       }
 
