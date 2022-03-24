@@ -26,7 +26,7 @@
 
   <groupId>org.everit.http</groupId>
   <artifactId>org.everit.http.restclient</artifactId>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
 
   <packaging>bundle</packaging>
 
@@ -83,7 +83,7 @@
               *
             </Import-Package>
             <Export-Package>
-              org.everit.http.restclient;version="3.1.0"
+              org.everit.http.restclient;version="3.2.0"
             </Export-Package>
           </instructions>
         </configuration>

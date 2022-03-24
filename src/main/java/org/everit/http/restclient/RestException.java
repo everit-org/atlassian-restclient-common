@@ -51,6 +51,12 @@ public class RestException extends RuntimeException {
         + (responseBody.isPresent() ? responseBody.get() : "[-NO-RESPONSE-BODY-AVAILABLE-]");
   }
 
+  private final HttpMethod httpMethod;
+
+  private final String originalMessage;
+
+  private final String requestUrl;
+
   private final String responseBody;
 
   private final int status;
@@ -84,6 +90,9 @@ public class RestException extends RuntimeException {
     super(RestException.createDetailedMessage(
         message, httpMethod, requestUrl, requestBody, status, responseBody),
         cause);
+    this.originalMessage = message;
+    this.httpMethod = httpMethod;
+    this.requestUrl = requestUrl;
     this.status = status;
     this.responseBody = responseBody.isPresent() ? responseBody.get() : null;
   }
@@ -153,6 +162,18 @@ public class RestException extends RuntimeException {
   @Deprecated
   public int getHttpCode() {
     return getStatus();
+  }
+
+  public HttpMethod getHttpMethod() {
+    return this.httpMethod;
+  }
+
+  public String getOriginalMessage() {
+    return this.originalMessage;
+  }
+
+  public String getRequestUrl() {
+    return this.requestUrl;
   }
 
   public Optional<String> getResponseBody() {
